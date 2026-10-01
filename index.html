@@ -1,0 +1,926 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Personal Finance Tracker</title>
+
+    <link rel="stylesheet" href="style.css" />
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+
+  <body>
+    <!-- MOBILE OVERLAY -->
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-icon">₨</div>
+
+        <div>
+          <h2>Finance<span>Tracker</span></h2>
+          <p>Personal Finance</p>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-page="dashboard">
+          <span class="nav-icon">⌂</span>
+          <span>Dashboard</span>
+        </button>
+
+        <button class="nav-item" data-page="transactions">
+          <span class="nav-icon">↔</span>
+          <span>Transactions</span>
+        </button>
+
+        <button class="nav-item" data-page="analytics">
+          <span class="nav-icon">◉</span>
+          <span>Analytics</span>
+        </button>
+
+        <button class="nav-item" data-page="backup">
+          <span class="nav-icon">▣</span>
+          <span>Data & Backup</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="storage-status">
+          <span class="status-dot"></span>
+
+          <div>
+            <strong>LocalStorage</strong>
+            <small>Data saved locally</small>
+          </div>
+        </div>
+
+        <div class="sidebar-footer">
+          <span>Finance Tracker</span>
+          <span>v3.0</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main-content">
+      <!-- TOPBAR -->
+      <header class="topbar">
+        <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+
+        <div class="page-heading">
+          <h1 id="pageTitle">Dashboard</h1>
+          <p id="pageSubtitle">Overview of your finances</p>
+        </div>
+
+        <div class="topbar-actions">
+          <button
+            class="month-nav-btn"
+            id="previousMonthBtn"
+            title="Previous month"
+          >
+            ‹
+          </button>
+
+          <div class="month-selector">
+            <span>Month</span>
+            <input type="month" id="monthPicker" />
+          </div>
+
+          <button class="month-nav-btn" id="nextMonthBtn" title="Next month">
+            ›
+          </button>
+        </div>
+      </header>
+
+      <!-- ========================= -->
+      <!-- DASHBOARD -->
+      <!-- ========================= -->
+
+      <section class="page-section active" id="dashboardPage">
+        <!-- SUMMARY CARDS -->
+        <div class="summary-grid">
+          <div class="summary-card income-card">
+            <div class="summary-icon">₨</div>
+
+            <div class="summary-info">
+              <span>Total Withdrawals</span>
+              <h2 id="totalIncome">Rs. 0</h2>
+              <small id="incomeComparison">No previous month data</small>
+            </div>
+          </div>
+
+          <div class="summary-card expense-card">
+            <div class="summary-icon">↓</div>
+
+            <div class="summary-info">
+              <span>Total Expenses</span>
+              <h2 id="totalExpenses">Rs. 0</h2>
+              <small id="expenseComparison">No previous month data</small>
+            </div>
+          </div>
+
+          <div class="summary-card balance-card">
+            <div class="summary-icon">=</div>
+
+            <div class="summary-info">
+              <span>Remaining Balance</span>
+              <h2 id="remainingBalance">Rs. 0</h2>
+              <small id="balanceComparison">Current month</small>
+            </div>
+          </div>
+
+          <div class="summary-card transaction-card">
+            <div class="summary-icon">#</div>
+
+            <div class="summary-info">
+              <span>Transactions</span>
+              <h2 id="transactionCount">0</h2>
+              <small id="transactionComparison">Current month</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- QUICK ACTIONS -->
+        <div class="section-header">
+          <div>
+            <h2>Quick Actions</h2>
+            <p>Add your money activity quickly.</p>
+          </div>
+
+          <div class="quick-actions">
+            <button class="primary-btn" id="dashboardAddIncome">
+              + Add Withdrawal
+            </button>
+
+            <button class="danger-btn" id="dashboardAddExpense">
+              + Add Expense
+            </button>
+          </div>
+        </div>
+
+        <!-- QUICK ANALYTICS -->
+        <div class="mini-stats-grid">
+          <div class="mini-stat">
+            <span>Average Daily Spending</span>
+            <strong id="averageDailySpending">Rs. 0</strong>
+          </div>
+
+          <div class="mini-stat">
+            <span>Highest Expense</span>
+            <strong id="highestExpense">Rs. 0</strong>
+          </div>
+
+          <div class="mini-stat">
+            <span>Top Category</span>
+            <strong id="topCategory">—</strong>
+          </div>
+
+          <div class="mini-stat">
+            <span>Top Vendor</span>
+            <strong id="topVendor">—</strong>
+          </div>
+        </div>
+
+        <!-- CHARTS -->
+        <div class="charts-grid">
+          <div class="chart-card large-chart">
+            <div class="chart-header">
+              <div>
+                <h3>Withdrawals vs Expenses</h3>
+                <p>Monthly financial overview</p>
+              </div>
+            </div>
+
+            <div class="chart-container">
+              <canvas id="incomeExpenseChart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-header">
+              <div>
+                <h3>Expense Categories</h3>
+                <p>Where your money goes</p>
+              </div>
+            </div>
+
+            <div class="chart-container">
+              <canvas id="categoryChart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-header">
+              <div>
+                <h3>Daily Spending</h3>
+                <p>Expense trend during the month</p>
+              </div>
+            </div>
+
+            <div class="chart-container">
+              <canvas id="dailySpendingChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- RECENT TRANSACTIONS -->
+        <div class="section-header recent-header">
+          <div>
+            <h2>Recent Transactions</h2>
+            <p>Your latest financial activity.</p>
+          </div>
+
+          <button class="text-btn" id="viewAllTransactions">View All →</button>
+        </div>
+
+        <div class="table-card">
+          <div class="empty-state" id="recentEmptyState">
+            <div class="empty-icon">₨</div>
+            <h3>No transactions yet</h3>
+            <p>Add a withdrawal or expense to get started.</p>
+          </div>
+
+          <div class="table-wrapper" id="recentTableWrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Type</th>
+                  <th>Description</th>
+                  <th>Category</th>
+                  <th>Vendor</th>
+                  <th>Amount</th>
+                </tr>
+              </thead>
+
+              <tbody id="recentTransactionsBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================= -->
+      <!-- TRANSACTIONS -->
+      <!-- ========================= -->
+
+      <section class="page-section" id="transactionsPage">
+        <div class="section-header">
+          <div>
+            <h2>Transactions</h2>
+            <p>View and manage all your transactions.</p>
+          </div>
+
+          <div class="quick-actions">
+            <button class="primary-btn" id="transactionAddIncome">
+              + Withdrawal
+            </button>
+
+            <button class="danger-btn" id="transactionAddExpense">
+              + Expense
+            </button>
+          </div>
+        </div>
+
+        <!-- FILTERS -->
+        <div class="filter-card">
+          <div class="search-box">
+            <span>⌕</span>
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Search description, vendor, notes..."
+            />
+          </div>
+
+          <select id="typeFilter">
+            <option value="all">All Types</option>
+            <option value="income">Withdrawals</option>
+            <option value="expense">Expenses</option>
+          </select>
+
+          <select id="categoryFilter">
+            <option value="all">All Categories</option>
+          </select>
+
+          <select id="paymentFilter">
+            <option value="all">All Payment Methods</option>
+            <option value="Cash">Cash</option>
+            <option value="Bank">Bank</option>
+            <option value="Card">Card</option>
+            <option value="Online">Online</option>
+          </select>
+
+          <button class="secondary-btn" id="clearFilters">Clear Filters</button>
+        </div>
+
+        <!-- TRANSACTION TABLE -->
+        <div class="table-card">
+          <div class="table-top">
+            <div>
+              <h3 id="transactionTableTitle">Transactions</h3>
+
+              <span id="filteredTransactionCount"> 0 transactions </span>
+            </div>
+          </div>
+
+          <div class="empty-state" id="transactionsEmptyState">
+            <div class="empty-icon">₨</div>
+            <h3>No transactions found</h3>
+            <p>Try changing your filters or add a new transaction.</p>
+          </div>
+
+          <div class="table-wrapper" id="transactionsTableWrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Type</th>
+                  <th>Description</th>
+                  <th>Category</th>
+                  <th>Person / Vendor</th>
+                  <th>Payment</th>
+                  <th>Amount</th>
+                  <th>Notes</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+
+              <tbody id="transactionsBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================= -->
+      <!-- ANALYTICS -->
+      <!-- ========================= -->
+
+      <section class="page-section" id="analyticsPage">
+        <div class="section-header">
+          <div>
+            <h2>Advanced Analytics</h2>
+            <p>Understand where and how your money is being spent.</p>
+          </div>
+        </div>
+
+        <!-- ANALYTICS CARDS -->
+        <div class="analytics-grid">
+          <div class="analytics-card">
+            <span>Previous Month Expenses</span>
+            <strong id="previousMonthExpenses">Rs. 0</strong>
+            <small id="monthlyExpenseDifference">—</small>
+          </div>
+
+          <div class="analytics-card">
+            <span>Expense Change</span>
+            <strong id="expenseChangePercent">0%</strong>
+            <small>Compared with previous month</small>
+          </div>
+
+          <div class="analytics-card">
+            <span>Average Transaction</span>
+            <strong id="averageTransaction">Rs. 0</strong>
+            <small>Expense average</small>
+          </div>
+
+          <div class="analytics-card">
+            <span>Expense Transactions</span>
+            <strong id="expenseTransactionCount">0</strong>
+            <small>Current month</small>
+          </div>
+        </div>
+
+        <!-- ANALYTICS CHARTS -->
+        <div class="charts-grid analytics-charts">
+          <div class="chart-card large-chart">
+            <div class="chart-header">
+              <div>
+                <h3>Monthly Comparison</h3>
+                <p>Current month compared with previous month</p>
+              </div>
+            </div>
+
+            <div class="chart-container">
+              <canvas id="monthlyComparisonChart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-header">
+              <div>
+                <h3>Payment Methods</h3>
+                <p>How expenses were paid</p>
+              </div>
+            </div>
+
+            <div class="chart-container">
+              <canvas id="paymentMethodChart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-header">
+              <div>
+                <h3>Spending by Weekday</h3>
+                <p>Which days cost you the most</p>
+              </div>
+            </div>
+
+            <div class="chart-container">
+              <canvas id="weekdayChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- TOP VENDORS -->
+        <div class="section-header recent-header">
+          <div>
+            <h2>Top Vendors / People</h2>
+            <p>People and businesses receiving your money.</p>
+          </div>
+        </div>
+
+        <div class="vendor-grid" id="vendorGrid"></div>
+      </section>
+
+      <!-- ========================= -->
+      <!-- BACKUP -->
+      <!-- ========================= -->
+
+      <section class="page-section" id="backupPage">
+        <div class="section-header">
+          <div>
+            <h2>Data & Backup</h2>
+            <p>Protect and manage your finance data.</p>
+          </div>
+        </div>
+
+        <div class="backup-grid">
+          <div class="backup-card">
+            <div class="backup-icon">↓</div>
+
+            <h3>Export Backup</h3>
+
+            <p>
+              Download all your transactions and categories as a JSON backup
+              file.
+            </p>
+
+            <button class="primary-btn" id="exportBtn">Export JSON</button>
+          </div>
+
+          <div class="backup-card">
+            <div class="backup-icon">↑</div>
+
+            <h3>Import Backup</h3>
+
+            <p>
+              Restore your transactions and categories from a previous JSON
+              backup.
+            </p>
+
+            <input type="file" id="importFile" accept=".json" hidden />
+
+            <button class="secondary-btn" id="importBtn">Import JSON</button>
+          </div>
+
+          <div class="backup-card danger-backup">
+            <div class="backup-icon">×</div>
+
+            <h3>Clear Data</h3>
+
+            <p>Permanently remove all transactions stored in this browser.</p>
+
+            <button class="danger-btn" id="clearDataBtn">
+              Clear Transactions
+            </button>
+          </div>
+        </div>
+
+        <!-- STORAGE INFO -->
+        <div class="storage-info-card">
+          <div>
+            <span>Storage Status</span>
+            <strong id="storageStatusText">Active</strong>
+          </div>
+
+          <div>
+            <span>Total Transactions</span>
+            <strong id="storageTransactionCount">0</strong>
+          </div>
+
+          <div>
+            <span>Total Categories</span>
+            <strong id="storageCategoryCount">0</strong>
+          </div>
+
+          <div>
+            <span>Last Backup</span>
+            <strong id="lastBackupText">Never</strong>
+          </div>
+        </div>
+
+        <!-- CATEGORY MANAGER -->
+        <div class="category-manager">
+          <div class="section-header">
+            <div>
+              <h2>Category Manager</h2>
+              <p>Create or remove custom expense categories.</p>
+            </div>
+          </div>
+
+          <div class="category-add-row">
+            <input
+              type="text"
+              id="newCategoryInput"
+              placeholder="Enter new category"
+              maxlength="30"
+            />
+
+            <button class="primary-btn" id="addCategoryBtn">
+              + Add Category
+            </button>
+          </div>
+
+          <div class="category-list" id="categoryList"></div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ========================= -->
+    <!-- ADD WITHDRAWAL MODAL -->
+    <!-- ========================= -->
+
+    <div class="modal-overlay" id="incomeModal">
+      <div class="modal">
+        <div class="modal-header">
+          <div>
+            <h2>Add Withdrawal</h2>
+            <p>Record money you received or withdrew.</p>
+          </div>
+
+          <button class="close-modal" data-close="incomeModal">×</button>
+        </div>
+
+        <form id="incomeForm">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Date *</label>
+              <input type="date" id="incomeDate" required />
+            </div>
+
+            <div class="form-group">
+              <label>Amount *</label>
+
+              <div class="amount-input">
+                <span>Rs.</span>
+                <input
+                  type="number"
+                  id="incomeAmount"
+                  min="0.01"
+                  step="0.01"
+                  placeholder="0.00"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="form-group full-width">
+              <label>Description *</label>
+
+              <input
+                type="text"
+                id="incomeDescription"
+                placeholder="e.g. Salary, pocket money, freelance payment"
+                maxlength="100"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Person / Vendor</label>
+
+              <input
+                type="text"
+                id="incomeVendor"
+                placeholder="e.g. Company, Client, Person"
+                maxlength="80"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Payment Method</label>
+
+              <select id="incomePaymentMethod">
+                <option value="Cash">Cash</option>
+                <option value="Bank">Bank</option>
+                <option value="Card">Card</option>
+                <option value="Online">Online</option>
+              </select>
+            </div>
+
+            <div class="form-group full-width">
+              <label>Notes</label>
+
+              <textarea
+                id="incomeNotes"
+                rows="3"
+                placeholder="Optional notes..."
+                maxlength="300"
+              ></textarea>
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button
+              type="button"
+              class="secondary-btn"
+              data-close="incomeModal"
+            >
+              Cancel
+            </button>
+
+            <button type="submit" class="primary-btn">Save Withdrawal</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ========================= -->
+    <!-- ADD EXPENSE MODAL -->
+    <!-- ========================= -->
+
+    <div class="modal-overlay" id="expenseModal">
+      <div class="modal">
+        <div class="modal-header">
+          <div>
+            <h2>Add Expense</h2>
+            <p>Record something you spent money on.</p>
+          </div>
+
+          <button class="close-modal" data-close="expenseModal">×</button>
+        </div>
+
+        <form id="expenseForm">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Date *</label>
+              <input type="date" id="expenseDate" required />
+            </div>
+
+            <div class="form-group">
+              <label>Amount *</label>
+
+              <div class="amount-input">
+                <span>Rs.</span>
+
+                <input
+                  type="number"
+                  id="expenseAmount"
+                  min="0.01"
+                  step="0.01"
+                  placeholder="0.00"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="form-group full-width">
+              <label>Description *</label>
+
+              <input
+                type="text"
+                id="expenseDescription"
+                placeholder="e.g. Lunch, fuel, electricity bill"
+                maxlength="100"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Category *</label>
+
+              <select id="expenseCategory" required></select>
+            </div>
+
+            <div class="form-group">
+              <label>Person / Vendor</label>
+
+              <input
+                type="text"
+                id="expenseVendor"
+                placeholder="e.g. Daraz, McDonald's, Ali"
+                maxlength="80"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Payment Method</label>
+
+              <select id="expensePaymentMethod">
+                <option value="Cash">Cash</option>
+                <option value="Bank">Bank</option>
+                <option value="Card">Card</option>
+                <option value="Online">Online</option>
+              </select>
+            </div>
+
+            <div class="form-group full-width">
+              <label>Notes</label>
+
+              <textarea
+                id="expenseNotes"
+                rows="3"
+                placeholder="Optional notes..."
+                maxlength="300"
+              ></textarea>
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button
+              type="button"
+              class="secondary-btn"
+              data-close="expenseModal"
+            >
+              Cancel
+            </button>
+
+            <button type="submit" class="danger-btn">Save Expense</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ========================= -->
+    <!-- EDIT MODAL -->
+    <!-- ========================= -->
+
+    <div class="modal-overlay" id="editModal">
+      <div class="modal">
+        <div class="modal-header">
+          <div>
+            <h2>Edit Transaction</h2>
+            <p>Update your transaction details.</p>
+          </div>
+
+          <button class="close-modal" data-close="editModal">×</button>
+        </div>
+
+        <form id="editForm">
+          <input type="hidden" id="editId" />
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Type</label>
+
+              <select id="editType">
+                <option value="income">Withdrawal</option>
+                <option value="expense">Expense</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Date *</label>
+
+              <input type="date" id="editDate" required />
+            </div>
+
+            <div class="form-group">
+              <label>Amount *</label>
+
+              <div class="amount-input">
+                <span>Rs.</span>
+
+                <input
+                  type="number"
+                  id="editAmount"
+                  min="0.01"
+                  step="0.01"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Category</label>
+
+              <select id="editCategory"></select>
+            </div>
+
+            <div class="form-group full-width">
+              <label>Description *</label>
+
+              <input
+                type="text"
+                id="editDescription"
+                maxlength="100"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Person / Vendor</label>
+
+              <input type="text" id="editVendor" maxlength="80" />
+            </div>
+
+            <div class="form-group">
+              <label>Payment Method</label>
+
+              <select id="editPaymentMethod">
+                <option value="Cash">Cash</option>
+                <option value="Bank">Bank</option>
+                <option value="Card">Card</option>
+                <option value="Online">Online</option>
+              </select>
+            </div>
+
+            <div class="form-group full-width">
+              <label>Notes</label>
+
+              <textarea id="editNotes" rows="3" maxlength="300"></textarea>
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="secondary-btn" data-close="editModal">
+              Cancel
+            </button>
+
+            <button type="submit" class="primary-btn">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ========================= -->
+    <!-- DELETE MODAL -->
+    <!-- ========================= -->
+
+    <div class="modal-overlay" id="deleteModal">
+      <div class="modal small-modal">
+        <div class="modal-header">
+          <div>
+            <h2>Delete Transaction?</h2>
+            <p>This action cannot be undone.</p>
+          </div>
+
+          <button class="close-modal" data-close="deleteModal">×</button>
+        </div>
+
+        <div class="delete-warning">
+          Are you sure you want to permanently delete this transaction?
+        </div>
+
+        <div class="modal-actions">
+          <button class="secondary-btn" data-close="deleteModal">Cancel</button>
+
+          <button class="danger-btn" id="confirmDeleteBtn">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================= -->
+    <!-- CLEAR DATA MODAL -->
+    <!-- ========================= -->
+
+    <div class="modal-overlay" id="clearModal">
+      <div class="modal small-modal">
+        <div class="modal-header">
+          <div>
+            <h2>Clear All Transactions?</h2>
+            <p>This will remove all transaction data.</p>
+          </div>
+
+          <button class="close-modal" data-close="clearModal">×</button>
+        </div>
+
+        <div class="delete-warning">
+          This cannot be undone unless you have a backup. Export your data first
+          if you want to keep it.
+        </div>
+
+        <div class="modal-actions">
+          <button class="secondary-btn" data-close="clearModal">Cancel</button>
+
+          <button class="danger-btn" id="confirmClearBtn">
+            Clear Everything
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast">
+      <span id="toastMessage"></span>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
