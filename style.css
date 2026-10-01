@@ -132,6 +132,14 @@ textarea {
   box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
 }
 
+.brand-logo {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 12px;
+    flex-shrink: 0;
+}
+
 .brand h2 {
   font-size: 17px;
   letter-spacing: -0.3px;
