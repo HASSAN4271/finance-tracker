@@ -1,0 +1,22 @@
+{
+  "name": "Personal Finance Tracker",
+  "short_name": "Finance Tracker",
+  "description": "A personal finance tracker for managing withdrawals, expenses, categories and spending analytics.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0b1120",
+  "theme_color": "#0b1120",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
