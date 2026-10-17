@@ -1,5 +1,5 @@
 /* =========================================================
-   PERSONAL FINANCE TRACKER - VERSION 3
+   PERSONAL FINANCE TRACKER - VERSION 4
    LocalStorage + JSON Backup + Chart.js
 ========================================================= */
 
@@ -10,6 +10,7 @@
 const TRANSACTION_STORAGE_KEY = "personalFinanceTrackerData";
 const CATEGORY_STORAGE_KEY = "financeTrackerCategories";
 const BACKUP_STORAGE_KEY = "financeTrackerLastBackup";
+const SAVINGS_GOALS_STORAGE_KEY = "financeTrackerSavingsGoals";
 
 /* =========================================================
    DEFAULT CATEGORIES
@@ -34,6 +35,7 @@ const DEFAULT_CATEGORIES = [
 
 let transactions = [];
 let categories = [];
+let savingsGoals = {};
 
 let selectedMonth = "";
 
@@ -72,6 +74,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   setupCategoryManager();
 
+  setupSavingsGoal();
+
   setupMobileMenu();
 
   populateCategoryDropdowns();
@@ -88,12 +92,15 @@ function loadData() {
     const savedTransactions = localStorage.getItem(TRANSACTION_STORAGE_KEY);
 
     const savedCategories = localStorage.getItem(CATEGORY_STORAGE_KEY);
+    const savedSavingsGoals = localStorage.getItem(SAVINGS_GOALS_STORAGE_KEY);
 
     transactions = savedTransactions ? JSON.parse(savedTransactions) : [];
 
     categories = savedCategories
       ? JSON.parse(savedCategories)
       : [...DEFAULT_CATEGORIES];
+
+    savingsGoals = savedSavingsGoals ? JSON.parse(savedSavingsGoals) : {};
   } catch (error) {
     console.error("Failed to load data:", error);
 
@@ -110,6 +117,14 @@ function loadData() {
 
   if (!Array.isArray(categories) || categories.length === 0) {
     categories = [...DEFAULT_CATEGORIES];
+  }
+
+  if (
+    !savingsGoals ||
+    typeof savingsGoals !== "object" ||
+    Array.isArray(savingsGoals)
+  ) {
+    savingsGoals = {};
   }
 
   transactions = transactions.map(normalizeTransaction);
@@ -156,6 +171,8 @@ function saveData() {
   localStorage.setItem(TRANSACTION_STORAGE_KEY, JSON.stringify(transactions));
 
   localStorage.setItem(CATEGORY_STORAGE_KEY, JSON.stringify(categories));
+
+  localStorage.setItem(SAVINGS_GOALS_STORAGE_KEY, JSON.stringify(savingsGoals));
 }
 
 /* =========================================================
@@ -198,6 +215,11 @@ function initializeMonth() {
   picker.addEventListener("change", () => {
     selectedMonth = picker.value;
 
+    const goalMonthDisplay = document.getElementById("savingsGoalMonthDisplay");
+    if (goalMonthDisplay) {
+      goalMonthDisplay.value = formatMonth(selectedMonth);
+    }
+
     updateAll();
   });
 }
@@ -219,6 +241,11 @@ document.getElementById("previousMonthBtn").addEventListener("click", () => {
 
   document.getElementById("monthPicker").value = selectedMonth;
 
+  const goalMonthDisplay = document.getElementById("savingsGoalMonthDisplay");
+  if (goalMonthDisplay) {
+    goalMonthDisplay.value = formatMonth(selectedMonth);
+  }
+
   updateAll();
 });
 
@@ -226,6 +253,11 @@ document.getElementById("nextMonthBtn").addEventListener("click", () => {
   selectedMonth = shiftMonth(selectedMonth, 1);
 
   document.getElementById("monthPicker").value = selectedMonth;
+
+  const goalMonthDisplay = document.getElementById("savingsGoalMonthDisplay");
+  if (goalMonthDisplay) {
+    goalMonthDisplay.value = formatMonth(selectedMonth);
+  }
 
   updateAll();
 });
@@ -435,6 +467,10 @@ function setupForms() {
   document
     .getElementById("editForm")
     .addEventListener("submit", saveEditedTransaction);
+
+  document
+    .getElementById("savingsGoalForm")
+    .addEventListener("submit", saveSavingsGoal);
 }
 
 /* =========================================================
@@ -457,6 +493,10 @@ function setupButtons() {
   document
     .getElementById("transactionAddExpense")
     .addEventListener("click", () => openExpenseModal());
+
+  document
+    .getElementById("setSavingsGoalBtn")
+    .addEventListener("click", openSavingsGoalModal);
 
   document
     .getElementById("confirmDeleteBtn")
@@ -647,6 +687,108 @@ function updatePageSubtitle() {
 }
 
 /* =========================================================
+   MONTHLY SAVINGS GOAL
+========================================================= */
+
+function setupSavingsGoal() {
+  const goalForm = document.getElementById("savingsGoalForm");
+
+  if (!goalForm) {
+    return;
+  }
+
+  document.getElementById("savingsGoalMonthDisplay").value =
+    formatMonth(selectedMonth);
+}
+
+function openSavingsGoalModal() {
+  const monthDisplay = document.getElementById("savingsGoalMonthDisplay");
+  const amountInput = document.getElementById("savingsGoalAmount");
+
+  monthDisplay.value = formatMonth(selectedMonth);
+  amountInput.value = savingsGoals[selectedMonth] || "";
+
+  openModal("savingsGoalModal");
+}
+
+function saveSavingsGoal(event) {
+  event.preventDefault();
+
+  const amount = Number(document.getElementById("savingsGoalAmount").value);
+
+  if (!amount || amount <= 0) {
+    showToast("Please enter a valid savings goal.");
+    return;
+  }
+
+  savingsGoals[selectedMonth] = amount;
+
+  saveData();
+
+  closeModal("savingsGoalModal");
+
+  updateAll();
+
+  showToast(`${formatMonth(selectedMonth)} savings goal saved.`);
+}
+
+function getSavingsGoal(month = selectedMonth) {
+  return Number(savingsGoals[month] || 0);
+}
+
+function updateSavingsGoal() {
+  const monthTransactions = getMonthTransactions();
+  const goal = getSavingsGoal();
+
+  const income = getIncomeTotal(monthTransactions);
+  const expenses = getExpenseTotal(monthTransactions);
+
+  // This is the amount currently available toward savings.
+  // It never creates or changes a transaction.
+  const availableToSave = Math.max(0, income - expenses);
+
+  const savedAmount = goal > 0 ? Math.min(availableToSave, goal) : 0;
+  const percentage =
+    goal > 0 ? Math.min(100, (availableToSave / goal) * 100) : 0;
+
+  const remaining = goal > 0 ? Math.max(0, goal - availableToSave) : 0;
+
+  document.getElementById("savingsGoalTitle").textContent =
+    `${formatMonth(selectedMonth)} Goal`;
+
+  document.getElementById("savingsGoalSaved").textContent =
+    formatCurrency(savedAmount);
+
+  document.getElementById("savingsGoalTarget").textContent =
+    goal > 0 ? formatCurrency(goal) : "Not set";
+
+  document.getElementById("savingsProgressFill").style.width = `${percentage}%`;
+
+  document.getElementById("savingsProgressText").textContent =
+    goal > 0 ? `${percentage.toFixed(0)}% saved` : "0% saved";
+
+  const remainingElement = document.getElementById("savingsGoalRemaining");
+  const statusElement = document.getElementById("savingsGoalStatus");
+
+  if (goal <= 0) {
+    remainingElement.textContent = "Set a goal to begin";
+    statusElement.textContent = "Not set";
+    statusElement.style.color = "";
+    return;
+  }
+
+  if (availableToSave >= goal) {
+    remainingElement.textContent = "Goal reached 🎉";
+    statusElement.textContent = "Complete";
+    statusElement.style.color = "var(--green)";
+  } else {
+    remainingElement.textContent = `${formatCurrency(remaining)} more needed`;
+    statusElement.textContent = "In progress";
+    statusElement.style.color = "var(--yellow)";
+  }
+}
+
+/* =========================================================
    DASHBOARD
 ========================================================= */
 
@@ -714,6 +856,8 @@ function updateDashboard() {
   document.getElementById("topVendor").textContent = topVendor
     ? topVendor.name
     : "—";
+
+  updateSavingsGoal();
 
   renderRecentTransactions(monthTransactions);
 }
@@ -2044,13 +2188,15 @@ function exportBackup() {
   const backup = {
     app: "Personal Finance Tracker",
 
-    version: "3.0",
+    version: "4.0",
 
     exportedAt: new Date().toISOString(),
 
     transactions: transactions,
 
     categories: categories,
+
+    savingsGoals: savingsGoals,
   };
 
   const json = JSON.stringify(backup, null, 4);
@@ -2121,6 +2267,17 @@ function importBackup(event) {
         categories = backup.categories;
       } else {
         categories = [...DEFAULT_CATEGORIES];
+      }
+
+      if (
+        backup.savingsGoals &&
+        typeof backup.savingsGoals === "object" &&
+        !Array.isArray(backup.savingsGoals)
+      ) {
+        savingsGoals = backup.savingsGoals;
+      } else {
+        // Older V3 backups did not contain savings goals.
+        savingsGoals = {};
       }
 
       saveData();

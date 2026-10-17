@@ -1,12 +1,15 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0b1120">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Finance Tracker">
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#0b1120" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="Finance Tracker" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
@@ -25,7 +28,11 @@
     <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
       <div class="brand">
-        <img src="icon-512.png" alt="Personal Finance Tracker" class="brand-logo">
+        <img
+          src="icon-512.png"
+          alt="Personal Finance Tracker"
+          class="brand-logo"
+        />
 
         <div>
           <h2>Finance<span>Tracker</span></h2>
@@ -67,7 +74,7 @@
 
         <div class="sidebar-footer">
           <span>Finance Tracker</span>
-          <span>v3.0</span>
+          <span>v4.0</span>
         </div>
       </div>
     </aside>
@@ -166,6 +173,57 @@
             <button class="danger-btn" id="dashboardAddExpense">
               + Add Expense
             </button>
+          </div>
+        </div>
+
+        <!-- MONTHLY SAVINGS GOAL -->
+        <div class="savings-goal-card">
+          <div class="savings-goal-header">
+            <div>
+              <span class="savings-goal-kicker">Monthly Savings Goal</span>
+              <h2 id="savingsGoalTitle">October 2026 Goal</h2>
+              <p>
+                Track how much of your remaining balance is available toward
+                this month's savings target.
+              </p>
+            </div>
+
+            <button class="secondary-btn" id="setSavingsGoalBtn">
+              Set Goal
+            </button>
+          </div>
+
+          <div class="savings-goal-main">
+            <div class="savings-progress-wrap">
+              <div class="savings-progress-bar">
+                <div
+                  class="savings-progress-fill"
+                  id="savingsProgressFill"
+                ></div>
+              </div>
+
+              <div class="savings-progress-labels">
+                <span id="savingsProgressText">0% saved</span>
+                <span id="savingsGoalRemaining">Set a goal to begin</span>
+              </div>
+            </div>
+
+            <div class="savings-goal-stats">
+              <div>
+                <span>Saved / Available</span>
+                <strong id="savingsGoalSaved">Rs. 0</strong>
+              </div>
+
+              <div>
+                <span>Target</span>
+                <strong id="savingsGoalTarget">Not set</strong>
+              </div>
+
+              <div>
+                <span>Status</span>
+                <strong id="savingsGoalStatus">Not set</strong>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -866,6 +924,60 @@
     </div>
 
     <!-- ========================= -->
+    <!-- SAVINGS GOAL MODAL -->
+    <!-- ========================= -->
+
+    <div class="modal-overlay" id="savingsGoalModal">
+      <div class="modal small-modal">
+        <div class="modal-header">
+          <div>
+            <h2>Set Monthly Savings Goal</h2>
+            <p>Set how much you want to save for the selected month.</p>
+          </div>
+
+          <button class="close-modal" data-close="savingsGoalModal">×</button>
+        </div>
+
+        <form id="savingsGoalForm">
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label>Month</label>
+              <input type="text" id="savingsGoalMonthDisplay" readonly />
+            </div>
+
+            <div class="form-group full-width">
+              <label>Target Amount *</label>
+
+              <div class="amount-input">
+                <span>Rs.</span>
+                <input
+                  type="number"
+                  id="savingsGoalAmount"
+                  min="1"
+                  step="0.01"
+                  placeholder="10000"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button
+              type="button"
+              class="secondary-btn"
+              data-close="savingsGoalModal"
+            >
+              Cancel
+            </button>
+
+            <button type="submit" class="primary-btn">Save Goal</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ========================= -->
     <!-- DELETE MODAL -->
     <!-- ========================= -->
 
@@ -929,18 +1041,21 @@
 
     <script src="script.js"></script>
     <script>
-    if ("serviceWorker" in navigator) {
+      if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
-            navigator.serviceWorker
-                .register("./service-worker.js")
-                .then(registration => {
-                    console.log("Service Worker registered:", registration.scope);
-                })
-                .catch(error => {
-                    console.error("Service Worker registration failed:", error);
-                });
+          navigator.serviceWorker
+            .register("./service-worker.js")
+            .then((registration) => {
+              console.log(
+                "Service Worker registered successfully:",
+                registration.scope,
+              );
+            })
+            .catch((error) => {
+              console.error("Service Worker registration failed:", error);
+            });
         });
-    }
-</script>
+      }
+    </script>
   </body>
 </html>
