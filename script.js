@@ -1122,9 +1122,18 @@ function getFilteredTransactions() {
   return monthItems.filter((transaction) => {
     const matchesSearch =
       !search ||
-      transaction.description.toLowerCase().includes(search) ||
-      transaction.vendor.toLowerCase().includes(search) ||
-      transaction.notes.toLowerCase().includes(search);
+      String(transaction.description || "")
+        .toLowerCase()
+        .includes(search) ||
+      String(transaction.category || "")
+        .toLowerCase()
+        .includes(search) ||
+      String(transaction.vendor || "")
+        .toLowerCase()
+        .includes(search) ||
+      String(transaction.notes || "")
+        .toLowerCase()
+        .includes(search);
 
     const matchesType = type === "all" || transaction.type === type;
 
@@ -1152,6 +1161,19 @@ function updateTransactionsPage() {
 
   document.getElementById("filteredTransactionCount").textContent =
     `${items.length} ${items.length === 1 ? "transaction" : "transactions"}`;
+
+  const matchingExpenses = items
+    .filter((transaction) => transaction.type === "expense")
+    .reduce((total, transaction) => total + Number(transaction.amount || 0), 0);
+  const matchingWithdrawals = items
+    .filter((transaction) => transaction.type === "income")
+    .reduce((total, transaction) => total + Number(transaction.amount || 0), 0);
+
+  document.getElementById("filteredSummaryCount").textContent = items.length;
+  document.getElementById("filteredSummaryExpenses").textContent =
+    formatCurrency(matchingExpenses);
+  document.getElementById("filteredSummaryWithdrawals").textContent =
+    formatCurrency(matchingWithdrawals);
 
   if (items.length === 0) {
     empty.style.display = "block";

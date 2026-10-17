@@ -1949,3 +1949,43 @@ select option {
     gap: 4px;
   }
 }
+
+/* =========================
+   FILTERED TRANSACTION TOTALS (V5)
+========================= */
+.filtered-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 18px;
+}
+.filtered-summary-card {
+  min-width: 0;
+  padding: 16px 18px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.filtered-summary-card span {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  margin-bottom: 8px;
+}
+.filtered-summary-card strong {
+  display: block;
+  color: var(--text);
+  font-size: 20px;
+  overflow-wrap: anywhere;
+}
+.filtered-summary-card.expense-summary strong {
+  color: #ff646b;
+}
+.filtered-summary-card.income-summary strong {
+  color: #27c879;
+}
+@media (max-width: 700px) {
+  .filtered-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
